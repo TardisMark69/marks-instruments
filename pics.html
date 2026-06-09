@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>More Photos — Mark's Guitars for Sale</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark:    #1a1410;
+      --bg-mid:     #231d17;
+      --bg-card:    #2c2419;
+      --gold:       #c9a84c;
+      --gold-light: #e2c068;
+      --gold-dim:   #7a6230;
+      --cream:      #f5eed8;
+      --cream-dim:  #b8aa88;
+      --text-body:  #d4c9a8;
+      --border:     rgba(201,168,76,0.25);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Lato', sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-body);
+      min-height: 100vh;
+      background-image:
+        radial-gradient(ellipse at 20% 0%, rgba(139,32,32,0.12) 0%, transparent 55%),
+        radial-gradient(ellipse at 80% 100%, rgba(201,168,76,0.08) 0%, transparent 55%);
+    }
+
+    /* NAV */
+    header {
+      border-bottom: 1px solid var(--border);
+      background: rgba(26,20,16,0.92);
+      backdrop-filter: blur(8px);
+      position: sticky; top: 0; z-index: 100;
+    }
+    nav {
+      max-width: 900px; margin: 0 auto; padding: 0 24px;
+      height: 58px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-brand { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--gold); letter-spacing: 0.04em; }
+    nav ul { list-style: none; display: flex; gap: 28px; }
+    nav a { color: var(--cream-dim); text-decoration: none; font-size: 0.82rem; letter-spacing: 0.12em; text-transform: uppercase; transition: color 0.2s; }
+    nav a:hover { color: var(--gold-light); }
+
+    /* PAGE HEADER */
+    #page-header {
+      text-align: center; padding: 72px 24px 56px; position: relative;
+      animation: fadeUp 0.7s ease both;
+    }
+    #page-header::after {
+      content: ''; display: block; width: 60px; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      margin: 28px auto 0;
+    }
+    #page-header h1 { font-family: 'Playfair Display', serif; font-size: clamp(1.6rem,4vw,2.8rem); font-weight: 400; color: var(--cream); letter-spacing: 0.02em; line-height: 1.2; }
+    #page-header h1 em { font-style: italic; color: var(--gold-light); }
+    .page-sub { margin-top: 12px; font-size: 0.8rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-dim); }
+
+    /* GALLERY GRID */
+    #gallery { max-width: 900px; margin: 0 auto 60px; padding: 0 24px; animation: fadeUp 0.7s 0.15s ease both; }
+    .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 12px; }
+    .photo-item {
+      background: var(--bg-card); border: 1px solid var(--border);
+      overflow: hidden; border-radius: 2px; box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+      cursor: zoom-in;
+    }
+    .photo-item img {
+      width: 100%; height: 340px; object-fit: cover; display: block;
+      opacity: 0.9; transition: opacity 0.3s, transform 0.5s;
+    }
+    .photo-item:hover img { opacity: 1; transform: scale(1.03); }
+
+    /* BACK LINK */
+    .back-bar { max-width: 900px; margin: 0 auto 32px; padding: 0 24px; animation: fadeUp 0.7s 0.28s ease both; }
+    .back-bar a { font-size: 0.78rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); text-decoration: none; transition: color 0.2s; }
+    .back-bar a::before { content: '← '; }
+    .back-bar a:hover { color: var(--gold-light); }
+
+    /* FOOTER */
+    footer { border-top: 1px solid var(--border); text-align: center; padding: 22px; font-size: 0.75rem; letter-spacing: 0.1em; color: var(--gold-dim); text-transform: uppercase; }
+
+    @keyframes fadeUp { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
+
+    /* ── LIGHTBOX ── */
+    #lightbox {
+      display: none;
+      position: fixed; inset: 0; z-index: 9999;
+      background: rgba(10,7,5,0.97);
+      /* overflow MUST be hidden so the zoomed image doesn't create scrollbars */
+      overflow: hidden;
+    }
+    #lightbox.active { display: block; }
+
+    /* The image sits inside a container that is exactly viewport-sized.
+       We transform the container (not the img) so pointer events stay correct. */
+    #lb-container {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      display: flex; justify-content: center; align-items: center;
+      transform-origin: 0 0;   /* JS sets this per-zoom */
+      will-change: transform;
+    }
+    #lb-img {
+      max-width: 92vw;
+      max-height: 90vh;
+      object-fit: contain;
+      border: 1px solid var(--border);
+      box-shadow: 0 0 80px rgba(0,0,0,0.9);
+      border-radius: 2px;
+      user-select: none;
+      pointer-events: none;   /* let the container handle all events */
+      display: block;
+    }
+
+    /* UI chrome – always on top, not inside the transformed container */
+    #lb-close {
+      position: fixed; top: 16px; right: 22px; z-index: 10000;
+      font-size: 2.2rem; line-height: 1;
+      color: var(--gold); background: none; border: none;
+      cursor: pointer; opacity: 0.75; transition: opacity 0.2s;
+    }
+    #lb-close:hover { opacity: 1; }
+
+    #lb-prev, #lb-next {
+      position: fixed; top: 50%; z-index: 10000;
+      transform: translateY(-50%);
+      font-size: 2.4rem; line-height: 1;
+      color: var(--gold); background: rgba(26,20,16,0.75);
+      border: 1px solid var(--border); padding: 10px 18px;
+      cursor: pointer; transition: background 0.2s, color 0.2s;
+    }
+    #lb-prev { left: 14px; }
+    #lb-next { right: 14px; }
+    #lb-prev:hover, #lb-next:hover { background: rgba(201,168,76,0.15); color: var(--gold-light); }
+
+    #lb-counter {
+      position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);
+      z-index: 10000; font-size: 0.75rem; letter-spacing: 0.18em;
+      text-transform: uppercase; color: var(--gold-dim); pointer-events: none;
+    }
+    #lb-hint {
+      position: fixed; bottom: 42px; left: 50%; transform: translateX(-50%);
+      z-index: 10000; font-size: 0.68rem; letter-spacing: 0.16em;
+      text-transform: uppercase; color: var(--gold-dim);
+      opacity: 1; transition: opacity 1.2s; pointer-events: none;
+    }
+    #lb-hint.fade { opacity: 0; }
+  </style>
+</head>
+<body>
+
+<header>
+  <nav>
+    <a href="index.html" class="nav-brand">Mark McDougal</a>
+    <ul><li><a href="index.html">Back to Listing</a></li></ul>
+  </nav>
+</header>
+
+<main>
+  <section id="page-header">
+    <h1>Collings LC Eastside Deluxe<br><em>Photo Gallery</em></h1>
+    <p class="page-sub">Archtop Electric / Acoustic Guitar</p>
+  </section>
+
+  <div class="back-bar"><a href="index.html">Return to Listing</a></div>
+
+  <section id="gallery">
+    <div class="photo-grid">
+      <div class="photo-item"><img src="IMG_2050_thumb.JPG" data-full="IMG_2050.JPG" alt="Collings LC Eastside Deluxe"></div>
+      <div class="photo-item"><img src="IMG_2051_thumb.JPG" data-full="IMG_2051.JPG" alt="Collings LC Eastside Deluxe"></div>
+      <div class="photo-item"><img src="IMG_2052_thumb.JPG" data-full="IMG_2052.JPG" alt="Collings LC Eastside Deluxe"></div>
+      <div class="photo-item"><img src="IMG_2053_thumb.JPG" data-full="IMG_2053.JPG" alt="Collings LC Eastside Deluxe"></div>
+      <div class="photo-item"><img src="IMG_2054_thumb.JPG" data-full="IMG_2054.JPG" alt="Collings LC Eastside Deluxe"></div>
+      <div class="photo-item"><img src="IMG_2055_thumb.JPG" data-full="IMG_2055.JPG" alt="Collings LC Eastside Deluxe"></div>
+      <div class="photo-item"><img src="IMG_2056_thumb.JPG" data-full="IMG_2056.JPG" alt="Collings LC Eastside Deluxe"></div>
+      <div class="photo-item"><img src="IMG_2081_thumb.JPG" data-full="IMG_2081.JPG" alt="Collings LC Eastside Deluxe"></div>
+    </div>
+  </section>
+</main>
+
+<footer><p>&copy; 2026 Mark McDougal</p></footer>
+
+<!-- LIGHTBOX -->
+<div id="lightbox">
+  <div id="lb-container">
+    <img id="lb-img" src="" alt="">
+  </div>
+  <button id="lb-close"  aria-label="Close">&#x2715;</button>
+  <button id="lb-prev"   aria-label="Previous">&#8249;</button>
+  <button id="lb-next"   aria-label="Next">&#8250;</button>
+  <div id="lb-counter"></div>
+  <div id="lb-hint">scroll to zoom &nbsp;&bull;&nbsp; drag to pan &nbsp;&bull;&nbsp; dbl-click to reset</div>
+</div>
+
+<script>
+(function () {
+  const thumbs   = Array.from(document.querySelectorAll('.photo-item img'));
+  const lb       = document.getElementById('lightbox');
+  const container= document.getElementById('lb-container');
+  const img      = document.getElementById('lb-img');
+  const btnClose = document.getElementById('lb-close');
+  const btnPrev  = document.getElementById('lb-prev');
+  const btnNext  = document.getElementById('lb-next');
+  const counter  = document.getElementById('lb-counter');
+  const hint     = document.getElementById('lb-hint');
+
+  let current = 0;
+  let scale   = 1;
+  let originX = 0;   // transform-origin x in px
+  let originY = 0;   // transform-origin y in px
+  // We keep track of the accumulated visual offset caused by origin shifts
+  let ox = 0, oy = 0;   // current transform-origin (viewport coords)
+  let hintTimer;
+
+  // Simple approach: use CSS scale() with transform-origin fixed at 0,0
+  // and track a single (tx, ty) translation so zoom always aims at cursor.
+  let tx = 0, ty = 0;
+
+  function applyTransform() {
+    container.style.transformOrigin = '0 0';
+    container.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
+  }
+
+  function resetZoom() {
+    scale = 1; tx = 0; ty = 0;
+    applyTransform();
+  }
+
+  // ── WHEEL ZOOM ──
+  // Standard "zoom toward cursor" math with origin-at-0,0 transform:
+  //   new_tx = cursor_x - scale_new/scale_old * (cursor_x - tx)
+  lb.addEventListener('wheel', function(e) {
+    e.preventDefault();
+
+    const FACTOR = 1.15;
+    const MIN = 1, MAX = 10;
+
+    const delta   = e.deltaY < 0 ? FACTOR : 1 / FACTOR;
+    const newScale = Math.min(MAX, Math.max(MIN, scale * delta));
+    if (newScale === scale) return;
+
+    const cx = e.clientX;
+    const cy = e.clientY;
+
+    tx = cx - (newScale / scale) * (cx - tx);
+    ty = cy - (newScale / scale) * (cy - ty);
+    scale = newScale;
+
+    // prevent panning beyond bounds at scale=1
+    if (scale <= 1) { tx = 0; ty = 0; }
+
+    applyTransform();
+    hint.classList.add('fade');
+  }, { passive: false });
+
+  // ── DRAG TO PAN ──
+  let dragging = false;
+  let dragX0, dragY0, dragTx0, dragTy0;
+
+  lb.addEventListener('mousedown', function(e) {
+    if (e.target === btnClose || e.target === btnPrev || e.target === btnNext) return;
+    if (scale <= 1) return;
+    e.preventDefault();
+    dragging = true;
+    dragX0 = e.clientX; dragY0 = e.clientY;
+    dragTx0 = tx; dragTy0 = ty;
+    lb.style.cursor = 'grabbing';
+  });
+
+  window.addEventListener('mousemove', function(e) {
+    if (!dragging) return;
+    tx = dragTx0 + (e.clientX - dragX0);
+    ty = dragTy0 + (e.clientY - dragY0);
+    applyTransform();
+  });
+
+  window.addEventListener('mouseup', function() {
+    if (!dragging) return;
+    dragging = false;
+    lb.style.cursor = '';
+  });
+
+  // ── DOUBLE-CLICK RESET ──
+  lb.addEventListener('dblclick', function(e) {
+    if (e.target === btnClose || e.target === btnPrev || e.target === btnNext) return;
+    resetZoom();
+  });
+
+  // ── OPEN / CLOSE ──
+  function openLightbox(index) {
+    current = index;
+    resetZoom();
+    img.src = thumbs[current].dataset.full || thumbs[current].src;
+    img.alt = thumbs[current].alt;
+    counter.textContent = (current + 1) + ' / ' + thumbs.length;
+    lb.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    hint.classList.remove('fade');
+    clearTimeout(hintTimer);
+    hintTimer = setTimeout(() => hint.classList.add('fade'), 3500);
+  }
+
+  function closeLightbox() {
+    lb.classList.remove('active');
+    document.body.style.overflow = '';
+    resetZoom();
+  }
+
+  function showPrev() { openLightbox((current - 1 + thumbs.length) % thumbs.length); }
+  function showNext() { openLightbox((current + 1) % thumbs.length); }
+
+  thumbs.forEach((t, i) => t.parentElement.addEventListener('click', () => openLightbox(i)));
+
+  btnClose.addEventListener('click', e => { e.stopPropagation(); closeLightbox(); });
+  btnPrev.addEventListener('click',  e => { e.stopPropagation(); showPrev(); });
+  btnNext.addEventListener('click',  e => { e.stopPropagation(); showNext(); });
+
+  // click backdrop (not image/buttons) to close
+  lb.addEventListener('click', function(e) {
+    if (scale > 1) return;   // don't close if zoomed — probably mis-click
+    if (e.target === lb || e.target === container) closeLightbox();
+  });
+
+  document.addEventListener('keydown', function(e) {
+    if (!lb.classList.contains('active')) return;
+    if (e.key === 'Escape')                      closeLightbox();
+    if (e.key === 'ArrowLeft'  && scale <= 1)    showPrev();
+    if (e.key === 'ArrowRight' && scale <= 1)    showNext();
+  });
+})();
+</script>
+
+</body>
+</html>

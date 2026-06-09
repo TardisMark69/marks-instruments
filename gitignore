@@ -1,0 +1,9 @@
+# Ignore the video file — too large for GitHub (128 MB)
+IMG_2209.MOV
+
+# Ignore the thumbnail script — not needed on the live site
+make_thumbs.sh
+
+# Ignore OS junk
+.DS_Store
+Thumbs.db
