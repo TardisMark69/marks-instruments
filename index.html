@@ -238,6 +238,42 @@
     footer { border-top: 1px solid var(--border); text-align: center; padding: 22px; font-size: 0.75rem; letter-spacing: 0.1em; color: var(--gold-dim); text-transform: uppercase; }
 
     @keyframes fadeUp { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
+
+    /* ── PAYMENT SECTION ── */
+    #payment-section { max-width: 960px; margin: 0 auto 60px; padding: 0 24px; }
+    .payment-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 32px 36px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+    .payment-label {
+      font-size: 0.68rem; letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 24px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .payment-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    .payment-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 32px;
+    }
+    @media (max-width: 600px) { .payment-grid { grid-template-columns: 1fr; } }
+    .payment-block h3 {
+      font-family: 'Playfair Display', serif; font-size: 1.0rem;
+      font-weight: 700; color: var(--cream); margin-bottom: 12px;
+    }
+    .payment-block p {
+      font-size: 0.88rem; line-height: 1.75; color: var(--text-body); font-weight: 300;
+    }
+    .payment-list {
+      list-style: none; display: flex; flex-direction: column; gap: 12px;
+    }
+    .payment-list li {
+      font-size: 0.88rem; line-height: 1.5; color: var(--text-body);
+      display: flex; align-items: flex-start; gap: 10px;
+    }
+    .payment-icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+    .payment-list strong { color: var(--cream); }
   </style>
 </head>
 <body>
@@ -392,6 +428,27 @@
         Free shipping, insured, within the continental United States.</p>
       </div>
       <a class="contact-email" href="mailto:CalMarkMcdougal@gmail.com">CalMarkMcdougal@gmail.com</a>
+    </div>
+  </section>
+
+  <section id="payment-section">
+    <div class="payment-card">
+      <div class="payment-label">Shipping &amp; Payment</div>
+      <div class="payment-grid">
+        <div class="payment-block">
+          <h3>Shipping &amp; Insurance</h3>
+          <p>Seller pays all shipping and insurance costs for delivery within the continental United States. Instruments are packed professionally and fully insured for their full sale value. Piano is local pickup only.</p>
+        </div>
+        <div class="payment-block">
+          <h3>Payment Options</h3>
+          <ul class="payment-list">
+            <li><span class="payment-icon">💵</span><div><strong>Cash</strong> — local pickup</div></li>
+            <li><span class="payment-icon">🏦</span><div><strong>Wire Transfer</strong> — direct bank to bank</div></li>
+            <li><span class="payment-icon">📱</span><div><strong>Venmo / Zelle</strong> — instant transfer</div></li>
+            <li><span class="payment-icon">🔒</span><div><strong>Escrow.com</strong> — buyer pays escrow fee; funds held securely until you confirm receipt</div></li>
+          </ul>
+        </div>
+      </div>
     </div>
   </section>
 </main>
