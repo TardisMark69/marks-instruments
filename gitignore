@@ -4,6 +4,12 @@ IMG_2209.MOV
 # Ignore the thumbnail script — not needed on the live site
 make_thumbs.sh
 
+# Qt Creator project files — local only, not part of the website
+*.pro.user
+*.pro.user.*
+CMakeLists.txt.user
+.qmake.stash
+
 # Ignore OS junk
 .DS_Store
 Thumbs.db
