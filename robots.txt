@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://tardismark69.github.io/marks-instruments/sitemap.xml
